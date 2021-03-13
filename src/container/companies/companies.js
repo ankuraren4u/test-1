@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useFela } from "react-fela";
 import classnames from "classnames";
-import {debounce} from "lodash";
+import { debounce } from "lodash";
 import { useFetchCompanies } from "../../apis/useFetchCompanies";
 import { TableView, HeaderBar, Input } from "../../component";
 import { containerStyle, inputWidth } from "./style";
@@ -15,18 +15,21 @@ const orderedColumns = [
 ];
 
 const getQueryFiltedCompanies = (query, companies) => {
-  if(!query) {
+  if (!query) {
     return companies;
   }
 
-  return companies.filter(c => {
-    if(c.names.find(n =>n.includes(query)) || c.email.find(n =>n.includes(query))) {
+  return companies.filter((c) => {
+    if (
+      c.names.find((n) => n.includes(query)) ||
+      c.email.find((n) => n.includes(query))
+    ) {
       return true;
     }
 
     return false;
-  })
-}
+  });
+};
 
 export const Companies = () => {
   const { css } = useFela();
@@ -37,19 +40,37 @@ export const Companies = () => {
     fetchCompanies();
   }, [fetchCompanies]);
 
-  const handleInputChange = useMemo(() => debounce((e => {
-    updateFilterSring(e.target.value);
-  }), DEBOUNCE_TIME), []);
+  const handleInputChange = useMemo(
+    () =>
+      debounce((e) => {
+        updateFilterSring(e.target.value);
+      }, DEBOUNCE_TIME),
+    []
+  );
 
   const containerClass = classnames("ui-container", css(containerStyle));
-  
+
   const queryFiltedCompanies = getQueryFiltedCompanies(filterSring, companies);
   return (
     <div className={containerClass}>
       <HeaderBar>
-        <Input type="text" width={inputWidth} placeholder="Filter Companies" onChange={handleInputChange}/>
+        <Input
+          type="text"
+          width={inputWidth}
+          placeholder="Filter Companies"
+          onChange={handleInputChange}
+        />
       </HeaderBar>
-      { companies && <TableView tableData={queryFiltedCompanies} orderedColumns={orderedColumns} /> }
+      {companies && companies.length ? (
+        queryFiltedCompanies && queryFiltedCompanies.length ? (
+          <TableView
+            tableData={queryFiltedCompanies}
+            orderedColumns={orderedColumns}
+          />
+        ) : (
+          "No result maching search filter"
+        )
+      ) : null}
     </div>
   );
 };
