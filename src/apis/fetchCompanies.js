@@ -18,7 +18,7 @@ const getMergedCompany = (crm, userGroup) => {
         names: [crm.name, userGroup.name],
         crm_id: crm.id,
         product_id: userGroup.id,
-        email: union(crm.email, userGroup.email)
+        email: union(crm.email || [], userGroup.email || [])
     }
 }
 
@@ -29,15 +29,15 @@ export const fetchCompanies = async () => {
     const [ crmResponse, userGroupResponse ] = await Promise.all([getCRMAccountsPromise, userGroupsPromise]);
     const emailCRMMap = new Map();
     const companies = [];
-    crmResponse.forEach(({ email = [] }, pos) => {
+    crmResponse && crmResponse.forEach(({ email = [] }, pos) => {
         email.forEach(e => {
             emailCRMMap.set(e, pos);
         })
     });
 
-    userGroupResponse.forEach(userGroup => {
+    userGroupResponse && userGroupResponse.forEach(userGroup => {
         //Using every to break the loop when required;
-        userGroup.email.every(e => {
+        userGroup && userGroup.email.every(e => {
             const pos = emailCRMMap.get(e)
             if (pos >= 0) {
                 companies.push(getMergedCompany(crmResponse[pos], userGroup));
